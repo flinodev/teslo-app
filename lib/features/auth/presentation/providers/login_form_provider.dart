@@ -80,3 +80,7 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
         isValid: Formz.validate([email, password]));
   }
 }
+
+final loginFormProvider = StateNotifierProvider.autoDispose<LoginFormNotifier, LoginFormState>((ref) {
+  return LoginFormNotifier();
+});
