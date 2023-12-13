@@ -2,17 +2,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:teslo_shop/features/auth/domain/domain.dart';
 import 'package:teslo_shop/features/auth/infrastructure/errors/auth_errors.dart';
 import 'package:teslo_shop/features/auth/infrastructure/repositories/auth_repository_impl.dart';
+import 'package:teslo_shop/features/shared/infrastructure/services/key_value_storage_service.dart';
+import 'package:teslo_shop/features/shared/infrastructure/services/key_value_storage_service_impl.dart';
 
 enum AuthStatus { checking, authenticated, notAuthenticated }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authRepository = AuthRepositoryImpl();
-  return AuthNotifier(authRepository: authRepository);
+  final keyValueStorageService = KeyValueStorageServiceImpl();
+  return AuthNotifier(
+      authRepository: authRepository,
+      keyValueStorageService: keyValueStorageService);
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository authRepository;
-  AuthNotifier({required this.authRepository}) : super(AuthState());
+  final KeyValueStorageService keyValueStorageService;
+  AuthNotifier({
+    required this.authRepository,
+    required this.keyValueStorageService,
+  }) : super(AuthState());
 
   Future<void> loginUser(String email, String password) async {
     try {
@@ -29,17 +38,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void checkAuthStatus() async {}
 
-  void _setLoggedUser(User user) {
-    // TODO: Save TOKEN!!!
+  void _setLoggedUser(User user) async {
+    await keyValueStorageService.setKeyValue('token', user.token);
     state = state.copyWith(user: user, authStatus: AuthStatus.authenticated);
   }
 
   Future<void> logout([String? errorMessage]) async {
-    // TODO: Clean TOKEN!!!
+    await keyValueStorageService.deleteKey('token');
     state = state.copyWith(
-        user: null,
-        authStatus: AuthStatus.notAuthenticated,
-        errorMessage: errorMessage);
+      user: null,
+      authStatus: AuthStatus.notAuthenticated,
+      errorMessage: errorMessage,
+    );
   }
 }
 
