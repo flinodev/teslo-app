@@ -22,7 +22,7 @@ class ProductsDatasourceImpl implements ProductsDatasource {
       final String? productId = productLike['id'];
       final String method = (productId == null) ? 'POST' : 'PATCH';
       final String url =
-          (productId == null) ? '/post' : '/products/$productId';
+          (productId == null) ? '/products' : '/products/$productId';
       productLike.remove('id');
       final response = await dio.request(
         url,
