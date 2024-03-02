@@ -3,7 +3,6 @@ import 'package:teslo_shop/config/config.dart';
 import 'package:teslo_shop/features/products/domain/datasources/products_datasource.dart';
 import 'package:teslo_shop/features/products/domain/entities/product.dart';
 import 'package:teslo_shop/features/products/infrastructure/infrastructure.dart';
-import 'package:teslo_shop/features/products/infrastructure/mappers/products_mapper.dart';
 
 class ProductsDatasourceImpl implements ProductsDatasource {
   late final Dio dio;
@@ -16,6 +15,30 @@ class ProductsDatasourceImpl implements ProductsDatasource {
             headers: {'Authorization': 'Bearer $accessToken'},
           ),
         );
+
+  Future<String> _uploadFile(String path) async {
+    try {
+      final fileName = path.split('/').last;
+      final FormData data = FormData.fromMap({
+        'file': MultipartFile.fromFileSync(path, filename: fileName),
+      });
+      final response = await dio.post('/files/product', data: data);
+      return response.data['image'];
+    } catch (e) {
+      throw Exception();
+    }
+  }
+
+  Future<List<String>> _uploadPhotos(List<String> photos) async {
+    final photosToUpload =
+        photos.where((element) => element.contains('/')).toList();
+    final photosToIgnore =
+        photos.where((element) => !element.contains('/')).toList();
+    final List<Future<String>> uploadJob = photosToUpload.map(_uploadFile).toList();
+    final newImages = await Future.wait(uploadJob);
+    return [...photosToIgnore, ...newImages];
+  }
+
   @override
   Future<Product> createUpdateProduct(Map<String, dynamic> productLike) async {
     try {
@@ -23,7 +46,9 @@ class ProductsDatasourceImpl implements ProductsDatasource {
       final String method = (productId == null) ? 'POST' : 'PATCH';
       final String url =
           (productId == null) ? '/products' : '/products/$productId';
+      productLike['images'] = await _uploadPhotos(productLike['images']);
       productLike.remove('id');
+
       final response = await dio.request(
         url,
         data: productLike,
