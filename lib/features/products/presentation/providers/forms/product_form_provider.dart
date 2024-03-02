@@ -55,7 +55,7 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
       'tags': state.tags.split(','),
       'images': state.images
           .map((image) =>
-              image.replaceAll('${Environment.apiUrl}/files/products/', ''))
+              image.replaceAll('${Environment.apiUrl}/files/product/', ''))
           .toList(),
     };
     try {
@@ -73,6 +73,12 @@ class ProductFormNotifier extends StateNotifier<ProductFormState> {
         Price.dirty(state.price.value),
         Stock.dirty(state.inStock.value),
       ]),
+    );
+  }
+
+  void updateProductImage(String path) {
+    state = state.copyWith(
+      images: [...state.images, path]
     );
   }
 
