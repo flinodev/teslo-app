@@ -17,7 +17,7 @@ class AuthDatasourceImpl extends AuthDataSource {
           'Authorization': 'Bearer $token',
         }),
       );
-      final user = UserMapper.userJsonToEntity(response.data);
+      final user = UserMapper.userJsonToEntity(response.data['user'], response.data['token']);
       return user;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
@@ -36,7 +36,7 @@ class AuthDatasourceImpl extends AuthDataSource {
         'email': email,
         'password': password,
       });
-      final user = UserMapper.userJsonToEntity(response.data);
+      final user = UserMapper.userJsonToEntity(response.data['user'], response.data['token']);
       return user;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {

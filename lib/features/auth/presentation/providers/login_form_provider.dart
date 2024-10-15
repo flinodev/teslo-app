@@ -26,14 +26,14 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
     final newPassword = Password.dirty(value);
     state = state.copyWith(
       password: newPassword,
-      isValid: Formz.validate([newPassword, state.password]),
+      isValid: Formz.validate([newPassword, state.email]),
     );
   }
 
   onFormSubmit() async {
     _touchEveryField();
     if (!state.isValid) return;
-    state = state.copyWith(isPosting: false);
+    state = state.copyWith(isPosting: true);
     await loginUserCallback(state.email.value, state.password.value);
     state = state.copyWith(isPosting: false);
   }
