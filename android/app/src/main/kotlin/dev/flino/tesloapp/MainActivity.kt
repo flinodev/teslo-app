@@ -1,4 +1,4 @@
-package com.example.teslo_shop
+package dev.flino.tesloapp
 
 import io.flutter.embedding.android.FlutterActivity
 
